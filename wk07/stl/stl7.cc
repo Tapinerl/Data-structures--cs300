@@ -16,5 +16,10 @@ using namespace std;
  */
 int findMedian(std::vector<int>& v)
 {
+    const auto it = v.begin() + v.size() / 2;
+    std::nth_element(v.begin(), it , v.end());
+    auto median = *it;
+    return median;
+
 }
 
