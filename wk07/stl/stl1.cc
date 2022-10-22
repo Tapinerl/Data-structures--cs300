@@ -17,6 +17,6 @@ int sortAsc(std::vector<int>& v)
     for (auto x : v){
         return x;
     }
-  return EXIT_FAILURE;
+    return EXIT_FAILURE;
 }
 
