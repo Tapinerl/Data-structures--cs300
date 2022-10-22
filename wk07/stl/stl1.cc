@@ -14,6 +14,8 @@ using namespace std;
 int sortAsc(std::vector<int>& v)
 {
     sort(v.rbegin(), v.rend(), greater <>());
-    return EXIT_FAILURE;
+    return EXIT_SUCCESS;
+
+   return EXIT_FAILURE;
 }
 
