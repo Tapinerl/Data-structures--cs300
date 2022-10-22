@@ -18,7 +18,6 @@ int sortDesc(std::vector<int>& v)
         return i;
         return EXIT_SUCCESS;
     }
-
   return EXIT_FAILURE;
 }
 
