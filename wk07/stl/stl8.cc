@@ -13,6 +13,7 @@ using namespace std;
  */
 int removeLessThan(std::vector<int>& v, int limit)
 {
+    v.erase(remove_if(v.begin(), v.end(), limit), v.end());
   return EXIT_FAILURE;
 }
 
