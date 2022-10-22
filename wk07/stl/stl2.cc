@@ -13,11 +13,7 @@ using namespace std;
  */
 int sortDesc(std::vector<int>& v)
 {
-    sort(v.begin(), v.end());
-    for (auto i : v){
-        return i;
-        return EXIT_SUCCESS;
-    }
+    sort(v.begin(), v.end(), greater <>());
   return EXIT_FAILURE;
 }
 
