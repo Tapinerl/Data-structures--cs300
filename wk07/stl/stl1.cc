@@ -13,6 +13,10 @@ using namespace std;
  */
 int sortAsc(std::vector<int>& v)
 {
+    sort(v.begin(), v.end());
+    for (auto x : v){
+        return x;
+    }
   return EXIT_FAILURE;
 }
 
