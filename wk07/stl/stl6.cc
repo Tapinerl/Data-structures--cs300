@@ -20,5 +20,8 @@ int findAtLeastGiven(std::map<std::string, int>& m, int given)
     auto it = std::find_if(std::begin(m), std::end(m), [given](const auto& mo) {return mo.second == given; });
     auto x = (it !=std::end(m));
     return x;
+    if (x == 0){
+        return -1;
+    }
 }
 
