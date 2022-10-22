@@ -14,6 +14,8 @@ using namespace std;
 int sortDesc(std::vector<int>& v)
 {
     sort(v.begin(), v.end(), greater <>());
+    return EXIT_SUCCESS;
+
   return EXIT_FAILURE;
 }
 
