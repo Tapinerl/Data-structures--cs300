@@ -13,11 +13,9 @@ using namespace std;
  */
 int removeLessThan(std::vector<int>& v, int limit)
 {
-    vector<int> ::iterator it;
-    it = remove_if(v.begin(), v.end(), binder2nd(greater<int>(), limit));
+    auto it = remove(v.begin(), v.end(), limit);
     v.erase(it, v.end());
     return EXIT_SUCCESS;
-
   return EXIT_FAILURE;
 }
 
