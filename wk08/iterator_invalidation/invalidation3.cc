@@ -23,8 +23,9 @@ void doubleEvenRemoveUneven(std::vector<int>& vec) {
 
         }
         else {
-            vec.erase(it);
-            it--;
+            vec.erase(std::remove_if(std::begin(vec), std::end(vec), [](auto const& i){return i%2 !=0;}),
+                      std::end(vec));
+
         }
     }
 }
