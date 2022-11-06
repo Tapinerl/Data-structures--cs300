@@ -13,8 +13,8 @@ int minValue(std::vector<int> vec){
     if ( vec.empty() ) {
         return 0; }
      else {
-        std::min_element(std::begin(vec), std::end(vec));
         std::sort(vec.begin(), vec.end());
+        std::min_element(std::begin(vec), std::end(vec));
         return vec[0];
     }
 }
