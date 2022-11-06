@@ -6,11 +6,11 @@ using namespace std;
 
 
 /**
- * @brief doubles even numbers in the vector, removes uneven numbers.
+ * @brief duplicates even numbers in the vector, removes uneven numbers. Example: {1, 2, 3 4} -> {2, 2, 4, 4}
  *
  * @param vec vector to be handled
  */
-void doubleEvenRemoveUneven(std::vector<int>& vec) {
+void duplicateEvenRemoveUneven(std::vector<int>& vec) {
 
     using Iter = std::vector<int>::iterator;
 
