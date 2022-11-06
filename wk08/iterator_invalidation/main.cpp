@@ -18,7 +18,7 @@ void usage()
     cout << "  test_num: number of the test performed on the function  (1-3)" << endl;
     cout << "   num_of_items: number of items in the test vector (optional, default=10)" << endl;
     cout << "Example:" << endl;
-    cout << "  iterator_invalidation 3 1    (test doubleEvenRemoveUneven() with test 1, where v1 should equal with s1)" << endl;
+    cout << "  iterator_invalidation 3 1    (test duplicateEvenRemoveUneven() with test 1, where v1 should equal with s1)" << endl;
 }
 
 int getRandom(int upper)
@@ -76,8 +76,8 @@ void printMap(const std::map<string, int>& m)
 	cout << endl << endl;
 }
 
-void testDoubleEvenRemoveUneven(int test_id) {
-    cout << "Case " << test_id <<": Testing function doubleEvenRemoveUneven() with the following data:" << endl << endl;
+void testDuplicateEvenRemoveUneven(int test_id) {
+    cout << "Case " << test_id <<": Testing function duplicateEvenRemoveUneven() with the following data:" << endl << endl;
     switch(test_id){
     case 1:
     {
@@ -85,7 +85,7 @@ void testDoubleEvenRemoveUneven(int test_id) {
         std::vector<int> s1 = {2, 2, 4, 4};
         v1.shrink_to_fit();
         printVector(v1);
-        doubleEvenRemoveUneven(v1);
+        duplicateEvenRemoveUneven(v1);
         if(v1 == s1) {
             cout << "The tested vector from your function is equal with the solution vector." << endl;
         }
@@ -93,7 +93,7 @@ void testDoubleEvenRemoveUneven(int test_id) {
             cout << "The tested vector is not equal with the solution vector." << endl;
         }
 
-        cout << "The vector after doubleEvenRemoveUneven() was called in the case:" << endl << endl;
+        cout << "The vector after duplicateEvenRemoveUneven() was called in the case:" << endl << endl;
         printVector(v1);
         break;
     }
@@ -102,12 +102,11 @@ void testDoubleEvenRemoveUneven(int test_id) {
         std::vector<int> v2 = {1, 2, 2, 4, 4};
         v2.shrink_to_fit();
         printVector(v2);
-        doubleEvenRemoveUneven(v2);
+        duplicateEvenRemoveUneven(v2);
 
         std::vector<int> s2 = {2, 2, 2, 2, 4, 4, 4, 4};
 
 
-        doubleEvenRemoveUneven(v2);
         if(v2 == s2) {
             cout << "The tested vector from your function is equal with the solution vector." << endl;
         }
@@ -115,7 +114,7 @@ void testDoubleEvenRemoveUneven(int test_id) {
             cout << "The tested vector is not equal with the solution vector." << endl;
         }
 
-        cout << "The vector after doubleEvenRemoveUneven():" << endl << endl;
+        cout << "The vector after duplicateEvenRemoveUneven():" << endl << endl;
         printVector(v2);
 
         break;
@@ -126,7 +125,7 @@ void testDoubleEvenRemoveUneven(int test_id) {
         std::vector<int> s3 = {2, 2};
         v3.shrink_to_fit();
         printVector(v3);
-        doubleEvenRemoveUneven(v3);
+        duplicateEvenRemoveUneven(v3);
         if(v3 == s3) {
             cout << "The tested vector from your function is equal with the solution vector." << endl;
         }
@@ -134,13 +133,13 @@ void testDoubleEvenRemoveUneven(int test_id) {
             cout << "The tested vector is not equal with the solution vector." << endl;
         }
 
-        cout << "The vector after doubleEvenRemoveUneven():" << endl << endl;
+        cout << "The vector after duplicateEvenRemoveUneven():" << endl << endl;
         printVector(v3);
 
         break;
     }
     default:
-      cout << "ERROR: Unknown test for doubleEvenRemoveUneven: " << test_id << endl;
+      cout << "ERROR: Unknown test for duplicateEvenRemoveUneven: " << test_id << endl;
       cout << "       Valid values are: 1, 2, 3." << endl;
       usage();
       break;
@@ -294,14 +293,16 @@ void test(int func_id, int test_id, int size)
   }
   case 3:
   {
-    testDoubleEvenRemoveUneven(test_id);
+    testDuplicateEvenRemoveUneven(test_id);
     break;
   }
   default:
     cout << "ERROR: Unknown function to test: " << func_id << endl;
     cout << "       Valid values are:" << endl;
-    cout << "       1 (=testing doubleEvenRemoveUneven function)" << endl;
-    cout << "       2 (=testing ascendingVector function)" << endl;
+    cout << "       3 (=testing duplicateEvenRemoveUneven function)" << endl;
+    cout << "       2 (=testing eraseEverySecond function)" << endl;
+    cout << "       1 (=testing ascendingVector function)" << endl;
+    
 
     usage();
     break;
