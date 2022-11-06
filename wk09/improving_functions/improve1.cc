@@ -11,9 +11,9 @@
  */
 std::vector<int> ascendingVector(int n){
     std::vector<int> v;
-    std::sort(v.begin(),v.end());
+    auto beg1 = v.begin();
     for ( int i = 0; i < n ; i++){
-        v.insert(v.end(), i);
+        v.push_back(i);
     }
     return v;
 }
