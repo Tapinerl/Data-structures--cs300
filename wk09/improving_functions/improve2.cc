@@ -10,10 +10,10 @@
  * @return int - the smallest value or 0 (zero) if vector is empty.
  */
 int minValue(std::vector<int> vec){
-    if ( vec.empty() ) { return 0; }
-    if ( std::is_sorted(vec.begin(), vec.end()) ) {
-        return vec[0];
-    } else {
+    if ( vec.empty() ) {
+        return 0; }
+     else {
+        std::min_element(std::begin(vec), std::end(vec));
         std::sort(vec.begin(), vec.end());
         return vec[0];
     }
