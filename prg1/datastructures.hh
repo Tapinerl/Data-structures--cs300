@@ -165,7 +165,7 @@ public:
     // Short rationale for estimate: find is constant
     bool change_station_coord(StationID id, Coord newcoord);
 
-    // Estimate of performance: O(n²)
+    // Estimate of performance: O(n^2)
     // Short rationale for estimate: for loop and find are constant
     bool add_departure(StationID stationid, TrainID trainid, Time time);
 
