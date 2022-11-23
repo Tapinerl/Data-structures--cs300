@@ -158,7 +158,7 @@ public:
     std::vector<StationID> stations_distance_increasing();
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: for loop
+    // Short rationale for estimate: for loop is constant
     StationID find_station_with_coord(Coord xy);
 
     // Estimate of performance: O(n)
