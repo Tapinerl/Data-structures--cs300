@@ -112,7 +112,7 @@ struct Region
     Name name = NO_NAME;
     std::vector<Coord> coords;
     std::shared_ptr<Region> parent = nullptr;
-    std::vector<std::shared_ptr<Region>> subregions;
+    std::vector<RegionID> subregions;
     std::vector<StationID> stations;
 };
 

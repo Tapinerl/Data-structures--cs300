@@ -313,7 +313,7 @@ bool Datastructures::add_subregion_to_region(RegionID id, RegionID parentid)
             && regions_[id]->parent == nullptr)
     {
         regions_[id]->parent = regions_[parentid];
-        regions_[parentid]->subregions.push_back(regions_[id]);
+        regions_[parentid]->subregions.push_back(id);
         return true;
     }
     else
