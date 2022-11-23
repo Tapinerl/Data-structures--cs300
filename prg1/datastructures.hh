@@ -1,8 +1,8 @@
 // Datastructures.hh
 //
-// Student name:
-// Student email:
-// Student number:
+// Student name:Elias Nikkinen
+// Student email:elias.nikkinen@tuni.fi
+// Student number:50497168
 
 #ifndef DATASTRUCTURES_HH
 #define DATASTRUCTURES_HH
@@ -14,6 +14,8 @@
 #include <limits>
 #include <functional>
 #include <exception>
+#include <memory>
+#include <map>
 
 // Types for IDs
 using StationID = std::string;
@@ -94,94 +96,115 @@ private:
 
 // This is the class you are supposed to implement
 
+struct Station
+{
+    StationID id = NO_STATION;
+    Name name = NO_NAME;
+    Coord coord = NO_COORD;
+    std::unordered_map<TrainID, Time> trains;
+    RegionID region = 0;
+
+};
+
+struct Region
+{
+    RegionID id = NO_REGION;
+    Name name = NO_NAME;
+    std::vector<Coord> coords;
+    std::shared_ptr<Region> parent = nullptr;
+    std::vector<std::shared_ptr<Region>> subregions;
+    std::vector<StationID> stations;
+};
+
+
 class Datastructures
 {
 public:
     Datastructures();
     ~Datastructures();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(1)
+    // Short rationale for estimate: std::count is constatnt
     unsigned int station_count();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: clear is linear
     void clear_all();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: iterating unordered map
     std::vector<StationID> all_stations();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     bool add_station(StationID id, Name const& name, Coord xy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     Name get_station_name(StationID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     Coord get_station_coordinates(StationID id);
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(nlog(n))
+    // Short rationale for estimate: sort compares nlog(n)
     std::vector<StationID> stations_alphabetically();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(nlog(n))
+    // Short rationale for estimate: sort compares nlog(n)
     std::vector<StationID> stations_distance_increasing();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: for loop
     StationID find_station_with_coord(Coord xy);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     bool change_station_coord(StationID id, Coord newcoord);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n²)
+    // Short rationale for estimate: for loop and find are constant
     bool add_departure(StationID stationid, TrainID trainid, Time time);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     bool remove_departure(StationID stationid, TrainID trainid, Time time);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(nlog(n))
+    // Short rationale for estimate:sort is O(nlog(n)) for loop and find are constant
     std::vector<std::pair<Time, TrainID>> station_departures_after(StationID stationid, Time time);
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     bool add_region(RegionID id, Name const& name, std::vector<Coord> coords);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: for loop goes through areas
     std::vector<RegionID> all_regions();
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     Name get_region_name(RegionID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     std::vector<Coord> get_region_coords(RegionID id);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance:O(n)
+    // Short rationale for estimate: find is constant
     bool add_subregion_to_region(RegionID id, RegionID parentid);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant
     bool add_station_to_region(StationID id, RegionID parentid);
 
-    // Estimate of performance:
-    // Short rationale for estimate:
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: find is constant + linear recursive function
     std::vector<RegionID> station_in_regions(StationID id);
 
     // Non-compulsory operations
@@ -198,12 +221,20 @@ public:
     // Short rationale for estimate:
     bool remove_station(StationID id);
 
+
     // Estimate of performance:
     // Short rationale for estimate:
     RegionID common_parent_of_regions(RegionID id1, RegionID id2);
 
 private:
     // Add stuff needed for your class implementation here
+    std::unordered_map<StationID, std::shared_ptr<Station>> stations_;
+    int SquareEuclidean(Coord c1, Coord c2 = {0,0});
+    static bool checkTakeoffs(std::pair<Time, TrainID> one, std::pair<Time, TrainID> two);
+    std::unordered_map<RegionID, std::shared_ptr<Region>> regions_;
+    //käy regionit läpi rekursiivisesti
+    std::vector<RegionID> go_through_regions(std::vector<RegionID> regs_vect, RegionID id);
+
 
 };
 
