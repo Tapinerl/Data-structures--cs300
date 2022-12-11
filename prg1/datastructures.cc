@@ -1,11 +1,13 @@
-
 // Datastructures.cc
+//
 
 #include "datastructures.hh"
 
 #include <random>
 
 #include <cmath>
+
+#include <stdexcept>
 
 std::minstd_rand rand_engine; // Reasonably quick pseudo-random generator
 
@@ -25,670 +27,539 @@ Type random_in_range(Type start, Type end)
 // an operation (Commenting out parameter name prevents compiler from
 // warning about unused parameters on operations you haven't yet implemented.)
 
-/**
- * @brief Datastructures::Datastructures, constructor
- */
-Datastructures::Datastructures()
+Datastructures::Datastructures(): stations()
 {
-    station_count_ = 0;
-    all_stations_ = {};
-    stations_ = {};
-    departures_ = {};
-    regions_ = {};
-    station_in_reg_ = {};
-    station_coords_ = {};
+
+    // Write any initialization you need here
 }
 
-/**
- * @brief Datastructures::~Datastructures, destructor
- */
 Datastructures::~Datastructures()
 {
     // Write any cleanup you need here
 }
 
 /**
- * @brief Datastructures::station_count, returns the amount of stations
- *                                       in datastructures
- * @return amount of stations
+ * @brief Datastructures::station_count
+ * palauttaa asemien lukumäärän eli vectorin
+ * vec_all_stations alkioiden määrän
+ * @return asemien lukm
  */
 unsigned int Datastructures::station_count()
 {
-    return station_count_;
+    return vec_all_stations.size();
 }
 
 /**
- * @brief Datastructures::clear_all, clears all containers in datastructures
+ * @brief Datastructures::clear_all
+ * poistaa kaikki tallennetut asemat
  */
 void Datastructures::clear_all()
 {
-    all_stations_.clear();
-    stations_.clear();
-    departures_.clear();
-    regions_.clear();
-    station_in_reg_.clear();
-    station_coords_.clear();
-    station_count_ = 0;
+    stations.clear();
+    vec_all_stations.clear();
 }
 
 /**
- * @brief Datastructures::all_stations, returns vector with all stations
- * @return vector with station id
+ * @brief Datastructures::all_stations
+ * palauttaa valmiin vektorin, jossa kaikkien asemien id:t
+ * @return palauttaa vectorin jossa kaikkien asemien id:t
  */
 std::vector<StationID> Datastructures::all_stations()
 {
-    return all_stations_;
+    return vec_all_stations;
 }
 
 /**
- * @brief Datastructures::add_station, adds station with given parameters
- * @param id, unique station id
- * @param name, name of the station
- * @param xy, unique coordinates
- * @return true if station was added, false if station with same xy or id is
- *         already in datastructures
+ * @brief Datastructures::add_station
+ * lisää annetun aseman tietorakenteisiin:
+ * stations ja vec_all_stations
+ * @param id lisättävän aseman id
+ * @param name lisättävän aseman nimi
+ * @param xy lisättävän aseman koordinaatti
+ * @return jos asemaa ei ole olemassa: false
+ *         muuten: true
  */
 bool Datastructures::add_station(StationID id, const Name& name, Coord xy)
 {
-    if (stations_.find(id) == stations_.end())
-    {
-        std::shared_ptr<Station_data> new_station(new Station_data{id, name, xy});
-        stations_.insert({id, new_station});
-
-        all_stations_.push_back(id);
-
-        station_coords_.insert({xy, id});
-        station_count_ += 1;
-        return true;
+    if(stationExists(id)){
+        return false;
     }
-    return false;
+
+    shared_ptr<StationInfo> newStation = make_shared<StationInfo>(name, xy);
+    stations.insert( { id, newStation } );
+
+    vec_all_stations.push_back(id);
+
+    return true;
 }
 
 /**
- * @brief Datastructures::get_station_name, returns station name with given id
- * @param id, id of the station to search
- * @return name of the station
+ * @brief Datastructures::get_station_name
+ * tarkistaa, että asema on olemassa ja
+ * palauttaa id:tä vastaavan aseman nimen
+ * @param id aseman id, jonka nimi palautetaan
+ * @return id:tä vastaavan aseman nimi tai
+ * NO_NAME, jos asemaa ei ole olemassa
  */
 Name Datastructures::get_station_name(StationID id)
 {
-    return stations_.at(id)->name_;
+    if(stationExists(id)){
+        return stations.at(id)->stationName;
+    }
+    return NO_NAME;
+
 }
 
 /**
- * @brief Datastructures::get_station_coordinates. returns station coordinates
- *        with given id
- * @param id, id of the station
- * @return coordinates of the station, {x,y}
+ * @brief Datastructures::get_station_coordinates
+ * tarkistaa, että asema on olemassa ja
+ * palauttaa id:tä vastaavan aseman koordinaatit
+ * @param id aseman id, jonka koordinaatit palautetaan
+ * @return id:tä vastaavan aseman koordinaatit,
+ * NO_COORD, jos asemaa ei ole olemassa
  */
 Coord Datastructures::get_station_coordinates(StationID id)
 {
-    return stations_.at(id)->coord_;
+    if(stationExists(id)){
+        return stations.at(id)->stationCoord;
+    }
+    return NO_COORD;
 }
 
 /**
- * @brief Datastructures::stations_alphabetically, returns all stations sorted
- *        alphabetically a-z by names
- * @return vector of station ids
+ * @brief Datastructures::stations_alphabetically
+ * järjestää vec_all_stations id:t asemien nimien
+ * akkoosjärjestyksen perusteella
+ * @return vectori, jossa asemien id:t asemien nimen mukaan akkosjärj.
  */
 std::vector<StationID> Datastructures::stations_alphabetically()
 {
-    std::unordered_map<StationID, std::shared_ptr<Station_data>>& ref = stations_;
-    std::sort(all_stations_.begin(), all_stations_.end(),[&ref]
-              (StationID a, StationID b)
-                {
-                    return ref.at(a)->name_ < ref.at(b)->name_;
-                });
-    return all_stations_;
+    vector<StationID> vec = vec_all_stations;
+    unordered_map<StationID, shared_ptr<StationInfo>> map = stations;
+    sort(vec.begin(), vec.end(), [map](StationID i, StationID j)
+        {return map.at(i)->stationName < map.at(j)->stationName;});
+
+    return vec;
+
 }
 
 /**
- * @brief Datastructures::stations_distance_increasing, returns all stations sorted
- *        by distance from {0,0}, shortest to longest
- * @return vector of station ids
+ * @brief Datastructures::stations_distance_increasing
+ * järjestää vec_all_stations id:t asemien koordinaattien perusteella
+ * matka origosta järjestykseen, pienin matka ensin, jos matka on sama, niin
+ * y-koordinaatin mukaan järjestykseessä, pienin arvo ensin
+ * @return vectori, jossa asemien id:t asemien koordinaattien mukaan järj.
  */
 std::vector<StationID> Datastructures::stations_distance_increasing()
 {
-    std::unordered_map<StationID, std::shared_ptr<Station_data>>& ref = stations_;
-    std::sort(all_stations_.begin(), all_stations_.end(),[&ref]
-              (StationID a, StationID b)
-    {
-        int a_x = ref.at(a)->coord_.x;
-        int a_y = ref.at(a)->coord_.y;
-        int b_x = ref.at(b)->coord_.x;
-        int b_y = ref.at(b)->coord_.y;
-        Distance dist_a = sqrt(pow(a_x, 2) + pow(a_y, 2));
-        Distance dist_b = sqrt(pow(b_x, 2) + pow(b_y, 2));
+    vector<StationID> vec = vec_all_stations;
+    unordered_map<StationID, shared_ptr<StationInfo>> map = stations;
+    sort(vec.begin(), vec.end(), [map](StationID i, StationID j)
+        {if (sqrt(pow(map.at(j)->stationCoord.x,2) + pow(map.at(j)->stationCoord.y,2)) ==
+             sqrt(pow(map.at(i)->stationCoord.x,2) + pow(map.at(i)->stationCoord.y,2))){
+            return map.at(i)->stationCoord.y < map.at(j)->stationCoord.y;
+        }
+        return sqrt(pow(map.at(i)->stationCoord.x,2) + pow(map.at(i)->stationCoord.y,2)) <
+               sqrt(pow(map.at(j)->stationCoord.x,2) + pow(map.at(j)->stationCoord.y,2));});
 
-        if (dist_a == dist_b)
-        {
-            return a_y < b_y;
-        }
-        else
-        {
-            return dist_a < dist_b;
-        }
-    });
-    return all_stations_;
+    return vec;
 }
 
 /**
- * @brief Datastructures::find_station_with_coord, returns station id
- *        with given coordinates
- * @param xy, coordinates of station
- * @return station id, if no station was found returns NO_STATION
+ * @brief Datastructures::find_station_with_coord
+ * etsii koordinaattia vastaavan aseman
+ * @param xy koordinaatti jonka asema halutaan
+ * @return aseman id, jolla on annettu koordinaatti,
+ * NO_STATION, jos asemaa ei ole
  */
 StationID Datastructures::find_station_with_coord(Coord xy)
 {
-    auto station = station_coords_.find(xy);
-    if (station != station_coords_.end())
-    {
-        return station->second;
+    for(auto it = stations.begin(); it != stations.end(); ++it){
+        if(it->second->stationCoord == xy){
+            return it->first;
+        }
     }
     return NO_STATION;
 }
 
 /**
- * @brief Datastructures::change_station_coord, changes given stations
- *        coordinates
- * @param id, station to edit
- * @param newcoord, new coordinates for station
- * @return true if station was found with given id and coordinates changed,
- *         false otherwise
+ * @brief Datastructures::change_station_coord
+ * vaihtaa aseman koordinaatin
+ * @param id aseman id, jonka koordinaatti vaihdetaan
+ * @param newcoord uusi aseman koordinaatti
+ * @return true, jos vaihto onnistuu (asema on olemassa)
+ * false, muuten
  */
 bool Datastructures::change_station_coord(StationID id, Coord newcoord)
 {
-    auto i = stations_.find(id);
-    if (i != stations_.end())
-    {
-        Coord old = i->second->coord_;
-        i->second->coord_ = newcoord;
-
-        auto coords = station_coords_.find(old);
-        station_coords_.erase(coords);
-        station_coords_.insert({newcoord, id});
-
+    if(stationExists(id)){
+        stations.at(id)->stationCoord = newcoord;
         return true;
     }
+
     return false;
+
 }
 
 /**
- * @brief Datastructures::add_departure, adds train departure with given parameters
- *        train and time needs to be unique together
- * @param stationid, station where the train departs
- * @param trainid, train that departs
- * @param time, time of departure
- * @return true if station was found and given trainid and time was unique,
- *         false otherwise
+ * @brief Datastructures::add_departure
+ * lisää asemalle lähtevän junan
+ * @param stationid aseman id, jolta juna lähtee
+ * @param trainid junan id, joka lähtee asemalta
+ * @param time aika, jolloin juna lähtee
+ * @return true, jos lisäys onnistuu (asema on olemassa)
+ * false, muuten
  */
 bool Datastructures::add_departure(StationID stationid, TrainID trainid, Time time)
 {
-    auto i_umap = departures_.find(stationid);
-    std::pair temp_pair = {time, trainid};
-
-    if (i_umap != departures_.end())
-    {
-        auto i_set = i_umap->second.find(temp_pair);
-        if (i_set == i_umap->second.end())
-        {
-            i_umap->second.insert(temp_pair);
+    try{
+        stations.at(stationid)->departures.at(time).insert(trainid);
+        return true;
+    } catch(const out_of_range& oor1){
+        try{
+            stations.at(stationid)->departures[time] = {};
+            stations.at(stationid)->departures.at(time).insert(trainid);
             return true;
-        }
-        else
-        {
+        } catch(const out_of_range& oor2){
             return false;
         }
     }
-    departures_.insert({stationid, {{time, trainid}}});
-    return true;
 }
 
 /**
- * @brief Datastructures::remove_departure, removes departure
- * @param stationid, station where to remove
- * @param trainid, train to remove
- * @param time, time to remove
- * @return true if station, train and time were found
- *         false otherwise
+ * @brief Datastructures::remove_departure
+ * poistaa junan lähdön asemalta
+ * @param stationid asema josta junan lähtö poistetaan
+ * @param trainid juna jonka lähtö poistetaan
+ * @param time aika jolloin poistettava juna lähtee asemalta
+ * @return true, jos poisto onnistui (asema on olemassa, juna lähtee asemalta annettuna aikana)
+ * false, muuten
  */
 bool Datastructures::remove_departure(StationID stationid, TrainID trainid, Time time)
 {
-    auto i_umap = departures_.find(stationid);
-    std::pair temp_pair = {time, trainid};
-
-    if (i_umap == departures_.end())
-    {
+    try{
+        stations.at(stationid)->departures.at(time).erase(trainid);
+        return true;
+    }
+    catch(const out_of_range& oor) {
         return false;
     }
-    auto i_set = i_umap->second.find(temp_pair);
 
-    if (i_set == i_umap->second.end())
-    {
-        return false;
-    }
-    i_umap->second.erase(i_set);
-    return true;
 }
 
 /**
- * @brief Datastructures::station_departures_after, list of all trains that depart
- *        after given time
- * @param stationid, station to search
- * @param time, time after trains depart
- * @return vector with pairs of time and trainid, if no trains depart,
- *         returns vector with {NO_TIME, NO_TRAIN}
+ * @brief Datastructures::station_departures_after
+ * etsii kaikki lähdöt asemalta annetulla kellonajalla ja sen jälkeen
+ * @param stationid asema, jonka lähdöt halutaan
+ * @param time aika, jolloin, ja jonka jälkeen lähdöt halutaan
+ * @return vectori jossa pari joka kertoo: junan lähtöajan ja junan id:n,
+ * jos asemaa ei ole olemassa {{NO_TIME, NO_TRAIN}}
  */
 std::vector<std::pair<Time, TrainID>> Datastructures::station_departures_after(StationID stationid, Time time)
 {
-    std::vector<std::pair<Time, TrainID>> temp = {};
-    std::pair<Time, TrainID> comp_pair = {time, "a"};
-
-    auto i_umap = departures_.find(stationid);
-
-    if (i_umap == departures_.end())
-    {
-        temp.push_back({NO_TIME, NO_TRAIN});
-        return temp;
+    if(!stationExists(stationid)){
+        return {{NO_TIME, NO_TRAIN}};
     }
-    auto upper_bound = i_umap->second.upper_bound(comp_pair);
+    map<Time, set<TrainID>> dep_info = stations.at(stationid)->departures;
+    vector<pair<Time, TrainID>> vec;
 
-    while (upper_bound != i_umap->second.end())
-    {
-        temp.push_back(*upper_bound);
-        ++upper_bound;
-    }
-    return temp;
-}
-
-/**
- * @brief Datastructures::add_region, adds region with given parameters
- * @param id, unique id of region
- * @param name, name of the region
- * @param coords, coordinates which form a polygon
- * @return true, if id is unique and region was added
- *         false, if id already exists
- */
-bool Datastructures::add_region(RegionID id, const Name &name, std::vector<Coord> coords)
-{
-    auto region = regions_.find(id);
-    if (region == regions_.end())
-    {
-        std::vector<std::shared_ptr<Region_data>> children = {};
-        Region_data* parent = nullptr;
-        std::shared_ptr<Region_data>
-                new_region(new Region_data{id, name, coords, parent, children});
-        regions_.insert({id, new_region});
-        return true;
-    }
-    return false;
-}
-
-/**
- * @brief Datastructures::all_regions, list of all regions
- * @return vector with region ids
- */
-std::vector<RegionID> Datastructures::all_regions()
-{
-    auto i = regions_.begin();
-    std::vector<RegionID> temp = {};
-
-    while (i != regions_.end())
-    {
-        temp.push_back(i->first);
-        ++i;
-    }
-    return temp;
-}
-
-/**
- * @brief Datastructures::get_region_name, returns name of the region
- * @param id, region to search
- * @return name of the region, if id does not exist, returns NO_NAME
- */
-Name Datastructures::get_region_name(RegionID id)
-{
-    auto region = regions_.find(id);
-    if (region == regions_.end())
-    {
-        return NO_NAME;
-    }
-    return region->second->name;
-}
-
-/**
- * @brief Datastructures::get_region_coords, returns coordinates of the region
- * @param id, region to search
- * @return vector with coordinates of the region
- *         if id does not exist, return vector with NO_COORD in it
- */
-std::vector<Coord> Datastructures::get_region_coords(RegionID id)
-{
-    auto region = regions_.find(id);
-    std::vector<Coord> temp = {};
-
-    if (region == regions_.end())
-    {
-        temp.push_back(NO_COORD);
-        return temp;
-    }
-    return region->second->coords;
-}
-
-/**
- * @brief Datastructures::add_subregion_to_region, adds existing subregion
- *        to given region, region can have only one parent
- * @param id, subregion id
- * @param parentid, parent region id
- * @return true if both region ids are valid and subregion does not have a parent
- *         false otherwise
- */
-bool Datastructures::add_subregion_to_region(RegionID id, RegionID parentid)
-{
-    auto child = regions_.find(id);
-    auto parent = regions_.find(parentid);
-
-    if (child == regions_.end() or parent == regions_.end())
-    {
-        return false;
-    }
-    if (child->second->parent != nullptr)
-    {
-        return false;
-    }
-    Region_data* parent_ptr = parent->second.get();
-    std::shared_ptr<Region_data> child_ptr = child->second;
-
-    child->second->parent = parent_ptr;
-    parent->second->children.push_back(child_ptr);
-    return true;
-}
-
-/**
- * @brief Datastructures::add_station_to_region, adds station to region,
- *        station can have only one parent region
- * @param id, station id
- * @param parentid, parent region id
- * @return true if both ids are valid and station does not have parent region
- *         false otherwise
- */
-bool Datastructures::add_station_to_region(StationID id, RegionID parentid)
-{
-    if (regions_.find(parentid) == regions_.end() or
-            stations_.find(id) == stations_.end() or
-            station_in_reg_.find(id) != station_in_reg_.end())
-    {
-        return false;
-    }
-    std::shared_ptr<Region_data> ptr = regions_.at(parentid);
-    station_in_reg_.insert({id, ptr});
-    return true;
-}
-
-/**
- * @brief Datastructures::station_in_regions, all the regions that the station
- *        is part of, if station's parent region is subregion of other, add
- *        that to the list and so on
- * @param id, station to search
- * @return vector of all region ids, if station id is invalid, return vector
- *         with NO_REGION
- */
-std::vector<RegionID> Datastructures::station_in_regions(StationID id)
-{
-    std::vector<RegionID> temp = {};
-    if (stations_.find(id) == stations_.end())
-    {
-        temp.push_back(NO_REGION);
-        return temp;
-    }
-    auto station = station_in_reg_.find(id);
-    if (station == station_in_reg_.end())
-    {
-        return temp;
-    }
-    temp.push_back(station->second->id);
-    return get_station_in_regions_rec(temp, station->second->parent);
-}
-
-/**
- * @brief Datastructures::all_subregions_of_region, all the regions that are
- *        subregions of given region and all the subregions of subregion and so on
- * @param id, region id to search
- * @return vector of all region ids, if given region id is invalid return
- *         vector with NO_REGION
- */
-std::vector<RegionID> Datastructures::all_subregions_of_region(RegionID id)
-{
-    std::vector<RegionID> temp = {};
-    auto region = regions_.find(id);
-
-    if (region == regions_.end())
-    {
-        temp.push_back(NO_REGION);
-    }
-    else
-    {
-        get_subregion_rec(temp, region->second);
-        temp.pop_back();
-    }
-    return temp;
-}
-
-/**
- * @brief Datastructures::stations_closest_to, searches three closest stations
- *        to the given coordinates, if less than three are found, return those.
- *        Distance is based on the straight distance between given coordinates
- *        and station coordinates
- * @param xy, coordinates to search
- * @return vector of station ids that are found
- */
-std::vector<StationID> Datastructures::stations_closest_to(Coord xy)
-{
-
-    std::set<std::pair<Distance, StationID>> temp = {};
-    std::vector<StationID> return_vec = {};
-
-    Distance longest_dist = 0;
-    auto i = station_coords_.begin();
-
-    while (i != station_coords_.end())
-    {
-        Distance dist = get_distance(i->first, xy);
-
-        if (temp.size() == 3)
-        {
-            if (dist < longest_dist)
-            {
-                auto last = temp.end();
-                --last;
-                temp.erase(last);
-                temp.insert({dist, i->second});
-
-                auto last_new = temp.end();
-                --last_new;
-                longest_dist = last_new->first;
+    for(auto it = dep_info.begin(); it != dep_info.end(); ++it){
+        if(it->first >= time){
+            for(auto j = it->second.begin(); j != it->second.end(); ++j){
+                vec.push_back(pair{it->first, *j});
             }
         }
-        else
-        {
-            temp.insert({dist, i->second});
-
-            auto last_new = temp.end();
-            --last_new;
-            longest_dist = last_new->first;
-        }
-        ++i;
-    }
-    for (auto pair = temp.begin(); pair != temp.end(); ++pair)
-    {
-        return_vec.push_back(pair->second);
-    }
-    return return_vec;
-}
-
-/**
- * @brief Datastructures::remove_station, removes station from all containers
- *        with given id
- * @param id, id of the station to remove
- * @return true if id is valid, false otherwise
- */
-bool Datastructures::remove_station(StationID id)
-{
-    auto station = stations_.find(id);
-    if (station == stations_.end())
-    {
-        return false;
-    }
-    Coord coords = station->second->coord_;
-    stations_.erase(station);
-
-    auto xy = station_coords_.find(coords);
-    station_coords_.erase(xy);
-
-    auto station_d = departures_.find(id);
-    if (station_d != departures_.end())
-    {
-        departures_.erase(station_d);
-    }
-
-    auto station_r = station_in_reg_.find(id);
-    if (station_r != station_in_reg_.end())
-    {
-        station_in_reg_.erase(station_r);
-    }
-
-    auto station_a = std::find(all_stations_.begin(), all_stations_.end(), id);
-    if (station_a != all_stations_.end())
-    {
-        all_stations_.erase(station_a);
-    }
-
-    station_count_ -=1;
-    return true;
-}
-
-/**
- * @brief Datastructures::common_parent_of_regions, closest parent of given regions.
- *        Closest parent is region which subregion is not parent of both regions.
- * @param id1, first region to search
- * @param id2, second region to search
- * @return region id of the closest parent, if one or both of the given ids are
- *         invalid or no parent region is found, return NO_REGION
- */
-RegionID Datastructures::common_parent_of_regions(RegionID id1, RegionID id2)
-{
-    auto reg1 = regions_.find(id1);
-    auto reg2 = regions_.find(id2);
-
-    if (reg1 == regions_.end() or reg2 == regions_.end())
-    {
-        return NO_REGION;
-    }
-
-    std::unordered_set<RegionID> first_parents = get_parents(reg1->second);
-    if (first_parents.empty())
-    {
-        return NO_REGION;
-    }
-
-    return find_common_parent(first_parents, reg2->second);
-}
-
-/**
- * @brief Datastructures::get_station_in_regions_rec, recursive function that
- *        finds all parent regions of given region
- * @param vec, vector where to store region ids
- * @param next, pointer to first parent of the region
- * @return vector with all the parent regions ids
- */
-std::vector<RegionID> Datastructures::get_station_in_regions_rec
-                      (std::vector<RegionID> &vec, Region_data* next)
-{
-    if (next == nullptr)
-    {
-        return vec;
-    }
-    vec.push_back(next->id);
-    return get_station_in_regions_rec(vec, next->parent);
-}
-
-/**
- * @brief Datastructures::get_subregion_rec, recursive function to search all
- *        subregions of given region
- * @param vec, vector where to store region ids
- * @param next, pointer to given region
- * @return vector with all subregions ids
- */
-std::vector<RegionID> Datastructures::get_subregion_rec(std::vector<RegionID> &vec,
-                                                        std::shared_ptr<Region_data> next)
-{
-    if (not next->children.empty())
-    {
-        for(auto child = next->children.begin(); child < next->children.end(); ++child)
-        {
-            get_subregion_rec(vec, *child);
-        }
-        vec.push_back(next->id);
-    }
-    else
-    {
-        vec.push_back(next->id);
     }
     return vec;
 }
 
 /**
- * @brief Datastructures::get_parents, find all parent regions of given region
- * @param first, pointer to given region
- * @return unordered_set of all parent regions ids
+ * @brief Datastructures::add_region
+ * lisää alueen tietorakenteeseen
+ * regions ja vec_all_regions
+ * @param id alueen id
+ * @param name alueen nimi
+ * @param coords alueen rajojen koordinaatit
+ * @return false, jos alue on jo olemassa
+ * true, lisäys onnistuu, alue ei ollut vielä olemassa
  */
-std::unordered_set<RegionID> Datastructures::get_parents(std::shared_ptr<Region_data> first)
+bool Datastructures::add_region(RegionID id, const Name &name, std::vector<Coord> coords)
 {
-    Region_data* curr = first->parent;
-    std::unordered_set<RegionID> temp = {};
-    while (curr != nullptr)
-    {
-        temp.insert(curr->id);
-        curr = curr->parent;
+    if(regionExists(id)){
+        return false;
     }
-    return temp;
+
+    shared_ptr<RegionInfo> newRegion = make_shared<RegionInfo>(name, coords);
+    regions.insert( { id, newRegion } );
+
+    vec_all_regions.push_back(id);
+
+    return true;
+
 }
 
 /**
- * @brief Datastructures::find_common_parent, searches same regions from given
- *        set of regions and from given regions parents
- * @param set, set of regions to compare
- * @param first, pointer to given region which parents are compared to set one by one
- * @return if common region is found, returns that
- *         otherwise returns NO_REGION
+ * @brief Datastructures::all_regions
+ * palauttaa vec_all_regions
+ * @return vectorin jossa kaikkien alueiden id:t
  */
-RegionID Datastructures::find_common_parent(const std::unordered_set<RegionID> &set,
-                                           std::shared_ptr<Region_data> first)
+std::vector<RegionID> Datastructures::all_regions()
 {
-    Region_data* curr = first->parent;
-    while (curr != nullptr)
-    {
-        auto search = set.find(curr->id);
-        if (search != set.end())
-        {
-            return *search;
+    return vec_all_regions;
+}
+
+/**
+ * @brief Datastructures::get_region_name
+ * hakee id:tä vastaavan alueen nimen
+ * @param id alueen id, jonka nimi halutaan
+ * @return id:tä vastaavan alueen nimi,
+ * NO_NAME, jos aluetta ei ole olemassa
+ */
+Name Datastructures::get_region_name(RegionID id)
+{
+    if(!regionExists(id)){
+        return NO_NAME;
+    }
+    return regions.at(id)->regionName;
+}
+
+/**
+ * @brief Datastructures::get_region_coords
+ * hakee id:tä vastaavan alueen koordinaatit
+ * @param id alueen id, jonka koordinaatit halutaan
+ * @return vectorin, jossa alueen koordinaati
+ * {NO_COORD}, jos aluetta ei ole olemassa
+ */
+std::vector<Coord> Datastructures::get_region_coords(RegionID id)
+{
+    if(!regionExists(id)){
+        return {NO_COORD};
+    }
+    return regions.at(id)->regionCoords;
+}
+
+/**
+ * @brief Datastructures::add_subregion_to_region
+ * lisää alueella alialueen
+ * @param id alialueen id
+ * @param parentid parent alueen id
+ * @return false, jos annetut alueet eivät ole olemassa,
+ * true, jos lisäys onnistui
+ */
+bool Datastructures::add_subregion_to_region(RegionID id, RegionID parentid)
+{
+    if(!(regionExists(id) and regionExists(parentid))){
+        return false;
+    } if(regions.at(id)->parentRegion == NO_REGION){
+
+        RegionID parent = parentid;
+        RegionID child = id;
+
+        regions.at(id)->parentRegion = parentid;
+        regions.at(parent)->subRegions.insert(id);
+
+
+
+        while(parent != NO_REGION){
+            regions.at(parent)->subRegions.insert(regions.at(child)->subRegions.begin(), regions.at(child)->subRegions.end());
+            child = parent;
+            parent = regions.at(parent)->parentRegion;
         }
-        curr = curr->parent;
+
+
+        return true;
     }
-    return NO_REGION;
+    return false;
+
 }
 
 /**
- * @brief Datastructures::get_distance, counts distance between two coordinates
- * @param coord1, first coordinate
- * @param coord2. second coordinate
- * @return straight distance between given coordinates
+ * @brief Datastructures::add_station_to_region
+ * lisää aseman alueeseen
+ * @param id aseman id
+ * @param parentid alueen id
+ * @return true, jos lisäys onnistui,
+ * false, jos asemaa tai aluetta ei ole olemassa tai asemalla on jo alue
  */
-Distance Datastructures::get_distance(const Coord &coord1, const Coord &coord2)
+bool Datastructures::add_station_to_region(StationID id, RegionID parentid)
 {
-    int x1 = coord1.x;
-    int y1 = coord1.y;
-    int x2 = coord2.x;
-    int y2 = coord2.y;
+    if(!(stationExists(id) and regionExists(parentid))){return false;}
+    else if(stations.at(id)->region != NO_REGION){return false;}
 
-    return sqrt(pow(x1-x2, 2) + pow(y1-y2, 2));
+    stations.at(id)->region = parentid;
+    return true;
+}
+
+/**
+ * @brief Datastructures::station_in_regions
+ * hakee kaikki alueet joihin asema kuuluu suoraan ja epäsuorasti
+ * @param id aseman id, jonka alueet halutaan
+ * @return vectorin, jossa alueiden id:t
+ * {NO_REGION}, jos asemaa ei ole olemassa
+ */
+std::vector<RegionID> Datastructures::station_in_regions(StationID id)
+{
+    if(!stationExists(id)){return {NO_REGION};}
+    RegionID regid = stations.at(id)->region;
+    vector<RegionID> vec;
+    while(regid != NO_REGION){
+        vec.push_back(regid);
+        regid = regions.at(regid)->parentRegion;
+    }
+    return vec;
+}
+
+//---------------------------------------------------------------------------------------------
+
+/**
+ * @brief Datastructures::all_subregions_of_region
+ * hakee kaikki alueen alialueet
+ * @param id alueen id, jonka alialueet halutaan
+ * @return vectorin, jossa kaikkien alialueiden id:t
+ */
+std::vector<RegionID> Datastructures::all_subregions_of_region(RegionID id)
+{
+
+    if(!regionExists(id)){
+        return {NO_REGION};
+    }
+    vector<RegionID> sub_regs;
+    sub_regs.insert(sub_regs.begin(), regions.at(id)->subRegions.begin(), regions.at(id)->subRegions.end());
+    return sub_regs;
+
+}
+
+/**
+ * @brief Datastructures::stations_closest_to
+ * etsii koordinaattia enintään kolme lähintä asemaa
+ * @param xy koordinaatti, jonka lähimmät asemat halutaan
+ * @return vector, jossa koordinaattia kolme lähintä asemaa,
+ * jos asemia on ainakin kolme
+ */
+std::vector<StationID> Datastructures::stations_closest_to(Coord xy)
+{
+    map<int, StationID> dist_of_stations;
+    vector<StationID> stations_closest;
+    int dist;
+    for(auto it = vec_all_stations.begin(); it != vec_all_stations.end(); ++it){
+        dist = calc_distance(xy, *it);
+        dist_of_stations.insert({dist, *it});
+
+        if(dist_of_stations.size() == 4){
+            dist_of_stations.erase(--dist_of_stations.end());
+        }
+
+    }
+
+    for(auto jt = dist_of_stations.begin(); jt != dist_of_stations.end(); ++jt){
+        stations_closest.push_back(jt->second);
+    }
+
+    return stations_closest;
+}
+
+/**
+ * @brief Datastructures::remove_station
+ * poistaa annetun aseman
+ * @param id aseman id, joka halutaan poistaa
+ * @return true, jos asema on olemassa
+ * false, jos annettu asemaa ei ole olemassa
+ */
+bool Datastructures::remove_station(StationID id)
+{
+
+    if(stationExists(id)){
+
+        auto it = remove(vec_all_stations.begin(), vec_all_stations.end(), id);
+        vec_all_stations.erase(it);
+
+        stations.erase(id);
+
+        return true;
+    }
+    return false;
+
+
+
+
+}
+
+/**
+ * @brief Datastructures::common_parent_of_regions
+ * etsii annettujen alueiden yhteisen vanhemman
+ * @param id1 alueen 1 id
+ * @param id2 alueen 2 id
+ * @return ensimmäisen hieratkiassa yhteisen vanhemman
+ * jos alueet eivät ole olemassa tai yhteistä vanhempaa ei ole
+ * palautetaan NO_REGION
+ */
+RegionID Datastructures::common_parent_of_regions(RegionID id1, RegionID id2){
+
+    if(!(regionExists(id1) and regionExists(id2))){
+        return NO_REGION;
+    }
+
+    RegionID regid1 = id1;
+    vector<RegionID> vec_id1;
+    while(regid1 != NO_REGION){
+        regid1 = regions.at(regid1)->parentRegion;
+        vec_id1.push_back(regid1);
+    }
+
+    RegionID regid2 = id2;
+    vector<RegionID> vec_id2;
+    while(regid2 != NO_REGION){
+        regid2 = regions.at(regid2)->parentRegion;
+        vec_id2.push_back(regid2);
+    }
+    for(auto it = vec_id1.begin(); it != vec_id2.end(); ++it){
+        if(find(vec_id2.begin(), vec_id2.end(), *it) != vec_id2.end()){
+            return *it;
+        }
+    }
+
+    return NO_REGION;
+
+}
+
+
+
+
+
+
+/**
+ * @brief Datastructures::stationExists
+ * tarkistaa onko annettu asema olemassa
+ * @param id asema, jona olemassa olo halutaan tietää
+ * @return true, jos asema on olemassa
+ * false, jos ei
+ */
+bool Datastructures::stationExists(StationID id){
+    return stations.find(id) != stations.end();
+}
+
+
+/**
+ * @brief Datastructures::regionExists
+ * tarkistaa onko annettu alue olemassa
+ * @param id alue, jona olemassa olo halutaan tietää
+ * @return true, jos alue on olemassa
+ * false, jos ei
+ */
+bool Datastructures::regionExists(RegionID id){
+    return regions.find(id) != regions.end();
+}
+
+
+/**
+ * @brief Datastructures::calc_distance
+ * laskee annetun koordinaatin ja aseman välisen etäisyyden
+ * @param xy koordinaatti
+ * @param id asema
+ * @return annetun koordinaatin ja aseman etäisyys
+ */
+int Datastructures::calc_distance(Coord xy, StationID id){
+    Coord station_xy =  stations.at(id)->stationCoord;
+    return sqrt(pow(xy.x-station_xy.x,2)+pow(xy.y-station_xy.y,2));
+
 }
