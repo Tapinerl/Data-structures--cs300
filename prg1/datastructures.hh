@@ -1,5 +1,6 @@
 // Datastructures.hh
 
+
 #ifndef DATASTRUCTURES_HH
 #define DATASTRUCTURES_HH
 
@@ -10,12 +11,15 @@
 #include <limits>
 #include <functional>
 #include <exception>
-#include <memory>
+
+#include <map>
 #include <unordered_map>
-#include <algorithm>
+#include <memory>
 #include <set>
 #include <unordered_set>
-#include <map>
+using namespace std;
+
+
 
 // Types for IDs
 using StationID = std::string;
@@ -34,13 +38,14 @@ Time const NO_TIME = 9999;
 // Return value for cases where integer values were not found
 int const NO_VALUE = std::numeric_limits<int>::min();
 
-
 // Type for a coordinate (x, y)
 struct Coord
 {
     int x = NO_VALUE;
     int y = NO_VALUE;
 };
+
+
 
 // Example: Defining == and hash function for Coord so that it can be used
 // as key for std::unordered_map/set, if needed
@@ -103,156 +108,157 @@ public:
     ~Datastructures();
 
     // Estimate of performance: O(1)
-    // Short rationale for estimate: Returns saved variable
+    // Short rationale for estimate: dokumentaation perusteella
+    //                               unordered_map::size kompleksisuus on vakio
     unsigned int station_count();
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Removes n amount of elements from containers
+    // Short rationale for estimate:dokumentaation perusteella
+    //                              unordered_map ja vector::clear kompleksisuus on lineaarinen
     void clear_all();
 
-    // Estimate of performance: O(1)
-    // Short rationale for estimate: Returns only vector
+    // Estimate of performance: O(n)
+    // Short rationale for estimate: palauttaa valmiin vectorin
     std::vector<StationID> all_stations();
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Vector insert has amortized constant complexity
-    //                               and umap insert has O(n) worst case and O(1) average
-
+    // Short rationale for estimate: tarkistaa ensin aseman olemassaolon O(N)
+    //                               unordered_map::insert O(N), (keskimääräisesti vakio)
+    //                               vectoriin lisäys O(1)
     bool add_station(StationID id, Name const& name, Coord xy);
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "at" method has O(n) worst case and average O(1)
+    // Short rationale for estimate: etsii aseman O(N) ja
+    //                               unordered_map::at O(N)
     Name get_station_name(StationID id);
 
+
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "at" method has O(n) worst case and average O(1)
+    // Short rationale for estimate: etsii aseman O(N) ja
+    //                               unordered_map::at O(N)
     Coord get_station_coordinates(StationID id);
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance: O(n * log(n))
-    // Short rationale for estimate: std::sort has this complexity
+    // Estimate of performance: O(n^(2))
+    // Short rationale for estimate: sort O(NlogN), unordered_map::at O(N) ->O(N²)
     std::vector<StationID> stations_alphabetically();
 
-    // Estimate of performance: O(n * log(n))
-    // Short rationale for estimate: std::sort has this complexity
+    // Estimate of performance: O(n^(2))
+    // Short rationale for estimate: sort O(NlogN), unordered_map::at O(N) ->O(N²)
     std::vector<StationID> stations_distance_increasing();
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "find" method has O(n) worst case and average O(1)
+    // Short rationale for estimate: käy läpi kaikki asemat ja vertaa niiden koordinaatteja annettuihin
     StationID find_station_with_coord(Coord xy);
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "find" method has O(n) worst case and average O(1)
+    // Short rationale for estimate: tarkastaa aseman olemassaolon O(N), jonka jälkeen unordered_map::at O(N)
     bool change_station_coord(StationID id, Coord newcoord);
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Set "insert" and "find" have O(log(n))
-    //                              complexity and Umap "find" method has average O(1),
-    //                              but O(n) worst case
+    // Short rationale for estimate: tarkistaa aseman olemassaolon, jonka jälkeen lisäys
+    //                               tietorakenteeseen
     bool add_departure(StationID stationid, TrainID trainid, Time time);
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Set "insert" and "find" have O(log(n))
-    //                              complexity and Umap "find" method has average O(1),
-    //                              but O(n) worst case
+    // Short rationale for estimate: käyttää erase -algoritmia poistaakseen trainid:n
+    //                               tietorakenteesta
     bool remove_departure(StationID stationid, TrainID trainid, Time time);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "at" method has O(n) worst case but average O(1)
-    //                               Still goes trough all elements in vector
+    // Estimate of performance: O(nlogn)
+    // Short rationale for estimate: käy läpi kaikki aseman ajat, ja kaikki junat ajalla, jos aika on suurempi kuin annettu
     std::vector<std::pair<Time, TrainID>> station_departures_after(StationID stationid, Time time);
 
     // We recommend you implement the operations below only after implementing the ones above
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "insert" method has O(n) worst case and average O(1)
+    // Estimate of performance: O(nlogn)
+    // Short rationale for estimate: sama toteutusperiaate, kuin add_departure
     bool add_region(RegionID id, Name const& name, std::vector<Coord> coords);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Adds all elements in vector
+    // Estimate of performance: O(1)
+    // Short rationale for estimate: palauttaa valmiin vektorin
     std::vector<RegionID> all_regions();
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "find" method has O(n) worst case and average O(1)
+    // Short rationale for estimate: käy kaikki regionit läpi kunnes löytää annetun id:n
     Name get_region_name(RegionID id);
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "find" method has O(n) worst case and average O(1)
+    // Short rationale for estimate: sama totetutusperiaate, kuin get_region_name
     std::vector<Coord> get_region_coords(RegionID id);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Umap "find" method has O(n) worst case and average O(1)
+    // Estimate of performance: O(nlogn)
+    // Short rationale for estimate: tarkistaa ensin voiko subregionin lisätä,
+    //                               lisää subregionin sekä parentregionin
     bool add_subregion_to_region(RegionID id, RegionID parentid);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Used umap methods have O(n) worst case and average O(1)
+    // Estimate of performance: O(nlogn)
+    // Short rationale for estimate: tarkistaa ensin että lisäyksen voi tehdä,
+    //                               lisää aseman regioniin ja regionin asemaan
     bool add_station_to_region(StationID id, RegionID parentid);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Recursive function is called for every region
-    //                               in worst case
+    // Estimate of performance: O(nlogn)
+    // Short rationale for estimate: tarkistaa onko asema olemassa,
+    //                               käy läpi kaikki parentregionit, johin aseman regioni kuuluu
     std::vector<RegionID> station_in_regions(StationID id);
 
-    // Non-compulsory operations
+    // Non-compulsory operations----------------------------------
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Worst case goes trough every region
+    // Short rationale for estimate: vectoriin lisäys (insert) lineaarinen
+    //
     std::vector<RegionID> all_subregions_of_region(RegionID id);
 
-    // Estimate of performance: O(n)
-    // Short rationale for estimate: Goes trough all elements in station_coords_
+    // Estimate of performance: O(nlogn)
+    // Short rationale for estimate: käy läpi kaikki asemat ja laskee niiden
+    //                               etäisyyden xy:stä map-tietorakenteessa pidetään vain kolmea alkiota
     std::vector<StationID> stations_closest_to(Coord xy);
 
     // Estimate of performance: O(n)
-    // Short rationale for estimate: Find for vector goes trough all elements in worst
-    //                               case. Same for umap find.
+    // Short rationale for estimate: vector::remove + vector::erase + unordered_map:
     bool remove_station(StationID id);
 
-    // Estimate of performance: O(n^2)
-    // Short rationale for estimate: Only if set.find goes O(n) in worst case.
-    //                               Otherwise O(n) in average
+    // Estimate of performance: O(nlogn)
+    // Short rationale for estimate: etsii ensin molempien kaikki parentit
+    //                               minkä jälkeen etsii yhteisen
     RegionID common_parent_of_regions(RegionID id1, RegionID id2);
 
 private:
     // Add stuff needed for your class implementation here
-    unsigned int station_count_;
 
-    struct Station_data
+
+    struct StationInfo
     {
-        StationID id_;
-        Name name_;
-        Coord coord_;
+        StationInfo(Name stationName, Coord stationCoord): stationName(stationName), stationCoord(stationCoord) {}
+        Name stationName;
+        Coord stationCoord;
+        map<Time, set<TrainID>> departures;
+        RegionID region = NO_REGION;
     };
 
-    struct Region_data
+    struct RegionInfo
     {
-        RegionID id;
-        Name name;
-        std::vector<Coord> coords;
-        Region_data* parent;
-        std::vector<std::shared_ptr<Region_data>> children;
+        RegionInfo(Name regionName, vector<Coord> regionCoords): regionName(regionName), regionCoords(regionCoords) {}
+        Name regionName;
+        vector<Coord> regionCoords;
+        unordered_set<RegionID> subRegions;
+        RegionID parentRegion = NO_REGION;
     };
 
-    std::unordered_map<StationID, std::shared_ptr<Station_data>> stations_;
-    std::vector<StationID> all_stations_;
-    std::unordered_map<Coord, StationID, CoordHash> station_coords_;
 
-    std::unordered_map<StationID, std::set<std::pair<Time, TrainID>>> departures_;
+    unordered_map<StationID, shared_ptr<StationInfo>> stations;
+    vector<StationID> vec_all_stations;
 
-    std::unordered_map<RegionID, std::shared_ptr<Region_data>> regions_;
-    std::unordered_map<StationID, std::shared_ptr<Region_data>> station_in_reg_;
+    unordered_map<RegionID, shared_ptr<RegionInfo>> regions;
+    vector<RegionID> vec_all_regions;
 
-    std::vector<RegionID> get_station_in_regions_rec(std::vector<RegionID> &vec,
-                                                     Region_data* next);
-    std::vector<RegionID> get_subregion_rec(std::vector<RegionID> &vec,
-                                            std::shared_ptr<Region_data> next);
+    bool stationExists(StationID id);
+    bool regionExists(RegionID id);
 
-    std::unordered_set<RegionID> get_parents(std::shared_ptr<Region_data> first);
-    RegionID find_common_parent(const std::unordered_set<RegionID> &set,
-                               std::shared_ptr<Region_data> first);
+    int calc_distance(Coord xy, StationID id);
 
-    Distance get_distance(const Coord &coord1, const Coord &coord2);
+
 };
 
 #endif // DATASTRUCTURES_HH
